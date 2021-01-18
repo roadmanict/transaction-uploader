@@ -1,45 +1,51 @@
-import puppeteer from "puppeteer";
+import * as puppeteer from 'puppeteer';
+import * as fs from 'fs';
 
-export let options: undefined | puppeteer.LaunchOptions;
-// Debug options
-options = {
+export const options: puppeteer.LaunchOptions = {
   headless: false,
   slowMo: 250, // slow down by 250ms
 };
 
 const ASN_BANK_LOGIN_URL =
-  "https://www.asnbank.nl/online/web/onlinebankieren/inloggen/#/inloggen";
+  'https://www.asnbank.nl/online/web/onlinebankieren/inloggen/#/inloggen';
 
-export const CSV_DOWNLOAD_URL = "/tmp/asn-csvs";
+export const CSV_DOWNLOAD_URL = '/tmp/asn-csvs';
 
 const QR_CODE_SELECTOR =
-  "body > mijn-login > div > inloggen > ap-grid-row > div > ap-grid-col > div > div > ap-sign > div > ap-token-selector > div:nth-child(3) > ap-button > button";
+  'body > mijn-login > div > inloggen > ap-grid-row > div > ap-grid-col > div > div > ap-sign > div > ap-token-selector > div:nth-child(3) > ap-button > button';
 
 const IS_LOGGED_IN_SELECTOR =
-  "#header > header > div.serviceheader-inner--left > ul > li.navbar__list--greeting";
+  '#header > header > div.serviceheader-inner--left > ul > li.navbar__list--greeting';
 
-const TRANSACTION_SUMMARY_SELECTOR = "#bet_transactieoverzicht";
+const TRANSACTION_SUMMARY_SELECTOR = '#bet_transactieoverzicht';
 
-const ACCOUNTS_SELECTOR = "#sl_accountNr_rekening";
+const ACCOUNTS_SELECTOR = '#sl_accountNr_rekening';
 
 const ACCOUNTS_LOOP_SELECTOR =
-  "#transactionAccountSelection > table > tbody > tr > td:nth-child(2) > div > div.accountSelectMultilineList.default > ul > li";
+  '#transactionAccountSelection > table > tbody > tr > td:nth-child(2) > div > div.accountSelectMultilineList.default > ul > li';
 
-const SUMMARY_DOWNLOAD_SECTION_SELECTOR = "#downloaden";
+const SUMMARY_DOWNLOAD_SECTION_SELECTOR = '#downloaden';
 
-const SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR = "#downloadtype";
+const SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR = '#downloadtype';
 
-const SUMMARY_DOWNLOAD_BUTTON_SELECTOR = "#downloadenFinal";
+const SUMMARY_DOWNLOAD_BUTTON_SELECTOR = '#downloadenFinal';
 
-const getASNBankCSVExports = async () => {
+export const getASNBankCSVExports = async () => {
   console.log("Started downloading ASN BANK csv's");
 
+  try {
+    fs.rmdirSync(CSV_DOWNLOAD_URL);
+  } catch (error) {
+    // ignore error
+  }
+
   const browser = await puppeteer.launch(options);
+
   const page = await browser.newPage();
 
-  // @ts-expect-error
-  await page._client.send("Page.setDownloadBehavior", {
-    behavior: "allow",
+  // @ts-expect-error _client is not available publicly
+  await page._client.send('Page.setDownloadBehavior', {
+    behavior: 'allow',
     downloadPath: CSV_DOWNLOAD_URL,
   });
 
@@ -58,11 +64,11 @@ const getASNBankCSVExports = async () => {
     await accountsSelectors[i].click();
 
     await page.click(SUMMARY_DOWNLOAD_SECTION_SELECTOR);
-    await page.click(SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR);
+    // await page.click(SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR);
     await page.click(SUMMARY_DOWNLOAD_BUTTON_SELECTOR);
   }
 
   await browser.close();
 
-  console.log("Finished script");
+  console.log('Finished script');
 };

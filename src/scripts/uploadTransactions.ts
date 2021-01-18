@@ -1,5 +1,5 @@
-import { Transaction } from "../entities/Transaction";
-import axios from "axios";
+import {Transaction} from '../domain/Transaction';
+import axios from 'axios';
 
 export const uploadTransactions = async (
   ynabAccessToken: string,
@@ -7,7 +7,7 @@ export const uploadTransactions = async (
 ): Promise<void> => {
   const transactionsByBudgetID: Record<string, Transaction[]> = {};
 
-  transactions.forEach((transaction) => {
+  transactions.forEach(transaction => {
     const transactions =
       transactionsByBudgetID[transaction.state.budgetID] || [];
     transactions.push(transaction);
@@ -20,20 +20,21 @@ export const uploadTransactions = async (
     const response = await axios.post(
       `https://api.youneedabudget.com/v1/budgets/${budgetID}/transactions`,
       {
-        transactions: transactions.map((transaction) => ({
+        transactions: transactions.map(transaction => ({
           account_id: transaction.state.accountID,
-          amount: transaction.state.amount,
+          amount: transaction.state.amount * 1000,
           date: transaction.state.date.toISOString(),
           memo: transaction.state.description,
           payee_id: transaction.state.payeeID,
           payee_name: transaction.state.payeeName,
+          cleared: 'cleared',
         })),
       },
       {
         headers: {
           Authorization: `Bearer ${ynabAccessToken}`,
         },
-        validateStatus: (status) => {
+        validateStatus: status => {
           return status >= 200 && status < 500;
         },
       }
