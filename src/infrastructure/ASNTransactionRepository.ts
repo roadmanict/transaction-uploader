@@ -1,28 +1,53 @@
-import {TransactionRepository} from '../domain/TransactionRepository';
+import {BankRepository} from '../domain/BankRepository';
 import {Transaction} from '../domain/Transaction';
-import {
-  BudgetTransferPayeeMap,
-  CSVFieldName,
-  CSVRow,
-  YnabIDMap,
-} from '../types';
+import {YnabIDMap} from '../types';
+import {ASNTransactionDownloader} from './ASNTransactionDownloader';
+import fs from 'fs';
+import csv from 'csv-parser';
+import {CSVFieldName, CSVRow} from './types';
+import {TransferPayeeMap} from '../domain/TransferPayee';
 
-export class ASNTransactionRepository implements TransactionRepository {
+const createASNCSVParser = () =>
+  csv({
+    headers: [
+      CSVFieldName.Date,
+      CSVFieldName.AccountNumber,
+      CSVFieldName.PayeeAccount,
+      CSVFieldName.PayeeName,
+      '4',
+      '5',
+      '6',
+      '7',
+      '7',
+      '8',
+      CSVFieldName.Amount,
+      '9',
+      '10',
+      '11',
+      '12',
+      '13',
+      '14',
+      CSVFieldName.Description,
+    ],
+  });
+
+export class ASNTransactionRepository implements BankRepository {
   public constructor(
-    private readonly accountsYNABMap: YnabIDMap,
-    private readonly budgetTransferPayees: BudgetTransferPayeeMap,
-    private readonly csvRows: CSVRow[]
+    private readonly asnTransactionDownloader: ASNTransactionDownloader,
+    private readonly accountsYNABMap: YnabIDMap
   ) {}
 
-  public async getAll(): Promise<Transaction[] | Error> {
+  public async getNewTransactions(
+    transferPayeeMap: TransferPayeeMap
+  ): Promise<Transaction[]> {
+    const transactionExports = await this.asnTransactionDownloader.downloadTransactions();
+
+    const csvRows = await this.readTransactionExports(transactionExports);
+
     const transactions: Transaction[] = [];
 
-    for (const csvRow of this.csvRows) {
-      const transaction = this.parseRow(csvRow);
-      if (transaction instanceof Error) {
-        return transaction;
-      }
-
+    for (const csvRow of csvRows) {
+      const transaction = this.deserializeTransaction(csvRow, transferPayeeMap);
       if (transaction) {
         transactions.push(transaction);
       }
@@ -31,7 +56,43 @@ export class ASNTransactionRepository implements TransactionRepository {
     return transactions;
   }
 
-  private parseRow(csvRow: CSVRow): Transaction | undefined | Error {
+  private async readTransactionExports(
+    transactionExports: string[]
+  ): Promise<CSVRow[]> {
+    const csvRows: CSVRow[] = [];
+
+    for (const file of transactionExports) {
+      csvRows.push(...(await this.handleReadable(file)));
+    }
+
+    return csvRows;
+  }
+
+  private handleReadable(filename: string): Promise<CSVRow[]> {
+    const parsedRows: CSVRow[] = [];
+
+    return new Promise<CSVRow[]>((resolve, reject) => {
+      fs.createReadStream(filename)
+        .on('error', err => {
+          reject(err);
+        })
+        .pipe(createASNCSVParser())
+        .on('data', row => {
+          parsedRows.push(row);
+        })
+        .on('end', () => {
+          resolve(parsedRows);
+        })
+        .on('error', err => {
+          reject(err);
+        });
+    });
+  }
+
+  private deserializeTransaction(
+    csvRow: CSVRow,
+    transferPayeeMap: TransferPayeeMap
+  ): Transaction | undefined {
     const accountNumber = csvRow[CSVFieldName.AccountNumber];
     const ynabIDs = this.accountsYNABMap[accountNumber || ''];
     if (!ynabIDs) {
@@ -44,7 +105,7 @@ export class ASNTransactionRepository implements TransactionRepository {
     let payeeID: string | undefined;
 
     if (transferAccountID) {
-      const transferPayees = this.budgetTransferPayees[ynabIDs.budgetID];
+      const transferPayees = transferPayeeMap[ynabIDs.budgetID];
       const transferPayee = transferPayees?.find(
         payee => payee.transfer_account_id === transferAccountID
       );
@@ -69,11 +130,11 @@ export class ASNTransactionRepository implements TransactionRepository {
     const [eurosString, centsString] = amountInput.split('.');
     const euros = parseInt(eurosString) * 100;
     if (isNaN(euros)) {
-      return new Error('Invalid amount');
+      throw new Error('Invalid amount');
     }
     const cents = parseInt(centsString);
     if (isNaN(cents)) {
-      return new Error('Invalid amount');
+      throw new Error('Invalid amount');
     }
 
     let amount = euros + cents;

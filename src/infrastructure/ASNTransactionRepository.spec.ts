@@ -1,11 +1,9 @@
 import {ASNTransactionRepository} from './ASNTransactionRepository';
-import {CSVFieldName} from '../types';
 import {Transaction} from '../domain/Transaction';
+import {ASNTransactionDownloader} from './ASNTransactionDownloader';
+import path from 'path';
 
-const csvRow =
-  "10-01-2021,NL97ASNB8830219525,,,,,,EUR,1889.51,EUR,-33.34,10-01-2021,10-01-2021,7913,BEA,50559982,'t481ey/031711','Albert Heijn 1631     >GRONINGEN10.01.2021 17U04 KV005 KF81K1   MCC:5411 Contactloze betaling NLNEDERLAND',2\n";
-
-const accountNumber = 'accountNumber';
+const accountNumber = 'myPersonalAccountNumber';
 const ynabIDsMap = {
   [accountNumber]: {
     budgetID: 'budgetID',
@@ -13,48 +11,111 @@ const ynabIDsMap = {
   },
 };
 
-type ThenArg<T> = T extends PromiseLike<infer U> ? U : T;
-
 describe('A ASNTransactionRepository', () => {
-  describe('Parsing albertheijn transaction', () => {
-    const asnTransactionRepository = new ASNTransactionRepository(
-      ynabIDsMap,
-      {},
-      [
-        {
-          [CSVFieldName.AccountNumber]: accountNumber,
-          [CSVFieldName.Amount]: '-33.34',
-          [CSVFieldName.Date]: '10-01-2021',
-          [CSVFieldName.Description]:
-            'Albert Heijn 1631     >GRONINGEN10.01.2021 17U04 KV005 KF81K1   MCC:5411 Contactloze betaling NLNEDERLAND',
-          [CSVFieldName.PayeeAccount]: '',
-          [CSVFieldName.PayeeName]: '',
-        },
-      ]
-    );
+  const asnTransactionDownloaderMock = {} as ASNTransactionDownloader;
 
+  const asnTransactionRepository = new ASNTransactionRepository(
+    asnTransactionDownloaderMock,
+    ynabIDsMap
+  );
+
+  describe('Parsing multiple transactions', () => {
     let transactions: Transaction[];
+
     beforeEach(async () => {
-      transactions = (await asnTransactionRepository.getAll()) as Transaction[];
+      const mockExportFile = path.join(
+        path.dirname(module.filename),
+        '__files__',
+        'transactionExport.csv'
+      );
+
+      asnTransactionDownloaderMock.downloadTransactions = () =>
+        Promise.resolve([mockExportFile]);
+
+      transactions = await asnTransactionRepository.getNewTransactions({});
     });
 
-    it('Does not throw an error', () => {
-      expect(transactions instanceof Error).toEqual(false);
+    it('Creates all transactions', () => {
+      expect(transactions.length).toEqual(16);
     });
 
-    it('Creates a correct transaction', () => {
+    it('Creates correct transaction 0', () => {
       expect(transactions[0].state).toEqual({
         budgetID: 'budgetID',
-        accountNumber: 'accountNumber',
+        accountNumber: accountNumber,
         accountID: 'ynabAccountID',
-        date: new Date('2021-01-10T00:00:00.000Z'),
-        amount: -3334,
+        date: new Date('2021-01-04T00:00:00.000Z'),
+        amount: -2620,
         description:
-          'Albert Heijn 1631     >GRONINGEN10.01.2021 17U04 KV005 KF81K1   MCC:5411 Contactloze betaling NLNEDERLAND',
+          "'M01968481M8X26RK 1150001402792064 ?61661?: iDEAL Betaling Kohinoor va Referentie: 2021-01-04 17:21 115000140279206'",
+        payeeAccountNumber: 'NL51DEUT0265262461',
+        payeeID: undefined,
+        payeeName: undefined,
+      });
+
+      expect(transactions[1].state).toEqual({
+        budgetID: 'budgetID',
+        accountNumber: accountNumber,
+        accountID: 'ynabAccountID',
+        date: new Date('2021-01-05T00:00:00.000Z'),
+        amount: 1,
+        description: "'CREDITRENTE                     TOT 01-01-21'",
         payeeAccountNumber: undefined,
         payeeID: undefined,
         payeeName: undefined,
       });
+
+      expect(transactions[2].state).toEqual({
+        budgetID: 'budgetID',
+        accountNumber: accountNumber,
+        accountID: 'ynabAccountID',
+        date: new Date('2021-01-07T00:00:00.000Z'),
+        amount: -1430,
+        description:
+          "'Eetcounter De Hunze   >GRONINGEN 7.01.2021 12U17 KV005 054049EQ MCC:5814                      NLNEDERLAND'",
+        payeeAccountNumber: undefined,
+        payeeID: undefined,
+        payeeName: undefined,
+      });
+
+      expect(transactions[3].state).toEqual({
+        budgetID: 'budgetID',
+        accountNumber: accountNumber,
+        accountID: 'ynabAccountID',
+        date: new Date('2021-01-10T00:00:00.000Z'),
+        amount: -3334,
+        description:
+          "'Albert Heijn 1631     >GRONINGEN10.01.2021 17U04 KV005 KF81K1   MCC:5411 Contactloze betaling NLNEDERLAND'",
+        payeeAccountNumber: undefined,
+        payeeID: undefined,
+        payeeName: undefined,
+      });
+    });
+  });
+
+  describe('Parsing a multiple files', () => {
+    let transactions: Transaction[];
+
+    beforeEach(async () => {
+      const mockExportFile1 = path.join(
+        path.dirname(module.filename),
+        '__files__',
+        'transactionExport.csv'
+      );
+      const mockExportFile2 = path.join(
+        path.dirname(module.filename),
+        '__files__',
+        'extraExport.csv'
+      );
+
+      asnTransactionDownloaderMock.downloadTransactions = () =>
+        Promise.resolve([mockExportFile1, mockExportFile2]);
+
+      transactions = await asnTransactionRepository.getNewTransactions({});
+    });
+
+    it('Creates all transactions', () => {
+      expect(transactions.length).toEqual(17);
     });
   });
 });

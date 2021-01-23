@@ -41,24 +41,24 @@ export class Transaction {
     payeeID: payeeIDInput,
     payeeAccountNumber: payeeAccountNumberInput,
     payeeName: payeeNameInput,
-  }: TransactionInput): Transaction | Error {
+  }: TransactionInput): Transaction {
     if (!isString(budgetID) || budgetID.length === 0) {
-      return new Error('Invalid budgetID');
+      throw new Error('Invalid budgetID');
     }
     if (!isString(accountNumber) || accountNumber.length === 0) {
-      return new Error('Invalid accountNumber');
+      throw new Error('Invalid accountNumber');
     }
     if (!isString(accountID) || accountID.length === 0) {
-      return new Error('Invalid accountID');
+      throw new Error('Invalid accountID');
     }
     if (!date) {
-      return new Error('Invalid date');
+      throw new Error('Invalid date');
     }
     if (!isNumber(amount)) {
-      return new Error('Invalid amount');
+      throw new Error('Invalid amount');
     }
     if (!isOptionalString(payeeIDInput)) {
-      return new Error('Invalid payeeIDInput');
+      throw new Error('Invalid payeeIDInput');
     }
     let payeeID = payeeIDInput;
     if (isString(payeeID) && payeeID.length === 0) {
@@ -66,14 +66,14 @@ export class Transaction {
     }
 
     if (!isOptionalString(payeeAccountNumberInput)) {
-      return new Error('Invalid payeeAccountNumber');
+      throw new Error('Invalid payeeAccountNumber');
     }
     let payeeAccountNumber = payeeAccountNumberInput;
     if (isString(payeeAccountNumber) && payeeAccountNumber.length === 0) {
       payeeAccountNumber = undefined;
     }
     if (!isOptionalString(payeeNameInput)) {
-      return new Error('Invalid payeeName');
+      throw new Error('Invalid payeeName');
     }
     let payeeName = payeeIDInput;
     if (isString(payeeName) && payeeName.length === 0) {

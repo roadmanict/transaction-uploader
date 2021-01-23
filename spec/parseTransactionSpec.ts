@@ -25,7 +25,7 @@
 //   });
 //
 //   it('Has the correct accountNumber', () => {
-//     expect(transaction.state.accountNumber).toEqual('NL97ASNB8830219525');
+//     expect(transaction.state.accountNumber).toEqual('myPersonalAccountNumber');
 //   });
 //
 //   it('Has the correct amount', () => {

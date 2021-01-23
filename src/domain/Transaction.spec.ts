@@ -88,10 +88,8 @@ describe('A Transaction', () => {
   });
 
   describe('Creating without values', () => {
-    const result = Transaction.Create({}) as Error;
-
-    it('Does not return an error', () => {
-      expect(result instanceof Error).toEqual(true);
+    it('Throws an error', () => {
+      expect(() => Transaction.Create({})).toThrow();
     });
   });
 });
