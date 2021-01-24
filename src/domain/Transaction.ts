@@ -75,7 +75,7 @@ export class Transaction {
     if (!isOptionalString(payeeNameInput)) {
       throw new Error('Invalid payeeName');
     }
-    let payeeName = payeeIDInput;
+    let payeeName = payeeNameInput;
     if (isString(payeeName) && payeeName.length === 0) {
       payeeName = undefined;
     }
@@ -108,4 +108,16 @@ export class Transaction {
   }
 
   private constructor(public readonly state: TransactionDTO) {}
+
+  public get description(): string | undefined {
+    return this.state.description;
+  }
+
+  public set payeeName(payeeName: string | undefined) {
+    this.state.payeeName = payeeName;
+  }
+
+  public get payeeID(): string | undefined {
+    return this.state.payeeID;
+  }
 }

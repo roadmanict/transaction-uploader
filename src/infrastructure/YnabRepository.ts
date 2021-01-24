@@ -2,16 +2,18 @@ import {BudgetAppRepository} from '../domain/BudgetAppRepository';
 import {Transaction} from '../domain/Transaction';
 import axios from 'axios';
 import {TransferPayeeMap} from '../domain/TransferPayee';
+import {inject, injectable} from 'tsyringe';
 
 const axiosClient = axios.create({
   validateStatus: () => true,
 });
 
+@injectable()
 export class YnabRepository implements BudgetAppRepository {
   public constructor(
-    private readonly ynabAccessToken: string,
-    private readonly accountIDs: string[],
-    private readonly budgetIDs: string[]
+    @inject('YnabAccessToken') private readonly ynabAccessToken: string,
+    @inject('accountIDs') private readonly accountIDs: string[],
+    @inject('budgetIDs') private readonly budgetIDs: string[]
   ) {}
 
   public async getPayees(): Promise<TransferPayeeMap> {

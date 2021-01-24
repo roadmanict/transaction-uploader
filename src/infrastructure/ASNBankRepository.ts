@@ -6,6 +6,7 @@ import fs from 'fs';
 import csv from 'csv-parser';
 import {CSVFieldName, CSVRow} from './types';
 import {TransferPayeeMap} from '../domain/TransferPayee';
+import {inject, injectable} from 'tsyringe';
 
 const createASNCSVParser = () =>
   csv({
@@ -31,10 +32,11 @@ const createASNCSVParser = () =>
     ],
   });
 
-export class ASNTransactionRepository implements BankRepository {
+@injectable()
+export class ASNBankRepository implements BankRepository {
   public constructor(
     private readonly asnTransactionDownloader: ASNTransactionDownloader,
-    private readonly accountsYNABMap: YnabIDMap
+    @inject('YnabIDMap') private readonly accountsYNABMap: YnabIDMap
   ) {}
 
   public async getNewTransactions(

@@ -27,7 +27,7 @@ describe('A Transaction', () => {
       description: 'description',
       payeeAccountNumber: 'payeeAccountNumber',
       payeeID: 'payeeID',
-      payeeName: 'payeeID',
+      payeeName: 'payeeName',
     });
   });
 

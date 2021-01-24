@@ -1,4 +1,5 @@
-import {ASNTransactionRepository} from './ASNTransactionRepository';
+import {mockContainer} from '../../spec/mockContainer';
+import {ASNBankRepository} from './ASNBankRepository';
 import {Transaction} from '../domain/Transaction';
 import {ASNTransactionDownloader} from './ASNTransactionDownloader';
 import path from 'path';
@@ -12,11 +13,15 @@ const ynabIDsMap = {
 };
 
 describe('A ASNTransactionRepository', () => {
-  const asnTransactionDownloaderMock = {} as ASNTransactionDownloader;
+  const localMockContainer = mockContainer.createChildContainer();
+  localMockContainer.register('YnabIDMap', {useValue: ynabIDsMap});
 
-  const asnTransactionRepository = new ASNTransactionRepository(
-    asnTransactionDownloaderMock,
-    ynabIDsMap
+  const asnTransactionDownloaderMock = localMockContainer.resolve(
+    ASNTransactionDownloader
+  );
+
+  const asnTransactionRepository = localMockContainer.resolve(
+    ASNBankRepository
   );
 
   describe('Parsing multiple transactions', () => {
@@ -50,7 +55,7 @@ describe('A ASNTransactionRepository', () => {
           "'M01968481M8X26RK 1150001402792064 ?61661?: iDEAL Betaling Kohinoor va Referentie: 2021-01-04 17:21 115000140279206'",
         payeeAccountNumber: 'NL51DEUT0265262461',
         payeeID: undefined,
-        payeeName: undefined,
+        payeeName: 'sitedish nl via mollie',
       });
 
       expect(transactions[1].state).toEqual({
@@ -89,6 +94,19 @@ describe('A ASNTransactionRepository', () => {
         payeeAccountNumber: undefined,
         payeeID: undefined,
         payeeName: undefined,
+      });
+
+      expect(transactions[8].state).toEqual({
+        budgetID: 'budgetID',
+        accountNumber: accountNumber,
+        accountID: 'ynabAccountID',
+        date: new Date('2021-01-13T00:00:00.000Z'),
+        amount: -3000,
+        description:
+          "'09775163199 0030005914985247 Invoice 62135944249071 Infomedics Referentie: 2021-01-13 19:09 003000591498524'",
+        payeeAccountNumber: 'NL34ABNA0243240058',
+        payeeID: undefined,
+        payeeName: 'infomedics b v',
       });
     });
   });

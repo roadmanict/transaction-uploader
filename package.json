@@ -31,6 +31,8 @@
   "dependencies": {
     "axios": "^0.21.1",
     "csv-parser": "^3.0.0",
-    "puppeteer": "^5.5.0"
+    "puppeteer": "^5.5.0",
+    "reflect-metadata": "^0.1.13",
+    "tsyringe": "^4.4.0"
   }
 }

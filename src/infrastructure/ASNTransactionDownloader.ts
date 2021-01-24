@@ -1,6 +1,7 @@
 import fs from 'fs';
 import puppeteer from 'puppeteer';
 import path from 'path';
+import {injectable} from 'tsyringe';
 
 export const options: puppeteer.LaunchOptions = {
   headless: false,
@@ -31,6 +32,7 @@ const SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR = '#downloadtype';
 
 const SUMMARY_DOWNLOAD_BUTTON_SELECTOR = '#downloadenFinal';
 
+@injectable()
 export class ASNTransactionDownloader {
   public async downloadTransactions(): Promise<string[]> {
     // console.log('Started downloading ASN BANK transactions');
