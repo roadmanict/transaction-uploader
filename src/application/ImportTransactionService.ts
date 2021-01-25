@@ -7,6 +7,7 @@ import {inject, injectable} from 'tsyringe';
 const payeeNameMatchers: Record<string, (description: string) => boolean> = {
   'Albert Heijn': (description: string) => /Albert Heijn/i.test(description),
   'De Hunze': (description: string) => /De Hunze/i.test(description),
+  'CAFETARIA SIM': (description: string) => /CAFETARIA SIM/i.test(description),
   Infomedics: (description: string) => /Infomedics/i.test(description),
 };
 
@@ -47,9 +48,9 @@ export class ImportTransactionService {
       findPayeeName(transaction);
     }
 
-    // await this.budgetAppRepository.saveAll(
-    //   // TODO does this belong here?
-    //   filterDuplicateTransferTransactions(transactions)
-    // );
+    await this.budgetAppRepository.saveAll(
+      // TODO does this belong here?
+      filterDuplicateTransferTransactions(transactions)
+    );
   }
 }

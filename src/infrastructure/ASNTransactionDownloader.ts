@@ -35,44 +35,44 @@ const SUMMARY_DOWNLOAD_BUTTON_SELECTOR = '#downloadenFinal';
 @injectable()
 export class ASNTransactionDownloader {
   public async downloadTransactions(): Promise<string[]> {
-    // console.log('Started downloading ASN BANK transactions');
-    //
-    // try {
-    //   fs.rmdirSync(CSV_DOWNLOAD_URL);
-    // } catch (error) {
-    //   // ignore error
-    // }
-    //
-    // const browser = await puppeteer.launch(options);
-    //
-    // const page = await browser.newPage();
-    //
-    // // @ts-expect-error _client is not available publicly
-    // await page._client.send('Page.setDownloadBehavior', {
-    //   behavior: 'allow',
-    //   downloadPath: CSV_DOWNLOAD_URL,
-    // });
-    //
-    // await page.goto(ASN_BANK_LOGIN_URL);
-    //
-    // await page.click(QR_CODE_SELECTOR);
-    //
-    // await page.waitForSelector(IS_LOGGED_IN_SELECTOR);
-    //
-    // await page.click(TRANSACTION_SUMMARY_SELECTOR);
-    //
-    // let accountsSelectors = await page.$$(ACCOUNTS_LOOP_SELECTOR);
-    // for (let i = 0; i < accountsSelectors.length; i++) {
-    //   accountsSelectors = await page.$$(ACCOUNTS_LOOP_SELECTOR);
-    //   await page.click(ACCOUNTS_SELECTOR);
-    //   await accountsSelectors[i].click();
-    //
-    //   await page.click(SUMMARY_DOWNLOAD_SECTION_SELECTOR);
-    //   // await page.click(SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR);
-    //   await page.click(SUMMARY_DOWNLOAD_BUTTON_SELECTOR);
-    // }
-    //
-    // await browser.close();
+    console.log('Started downloading ASN BANK transactions');
+
+    try {
+      fs.rmdirSync(CSV_DOWNLOAD_URL);
+    } catch (error) {
+      // ignore error
+    }
+
+    const browser = await puppeteer.launch(options);
+
+    const page = await browser.newPage();
+
+    // @ts-expect-error _client is not available publicly
+    await page._client.send('Page.setDownloadBehavior', {
+      behavior: 'allow',
+      downloadPath: CSV_DOWNLOAD_URL,
+    });
+
+    await page.goto(ASN_BANK_LOGIN_URL);
+
+    await page.click(QR_CODE_SELECTOR);
+
+    await page.waitForSelector(IS_LOGGED_IN_SELECTOR);
+
+    await page.click(TRANSACTION_SUMMARY_SELECTOR);
+
+    let accountsSelectors = await page.$$(ACCOUNTS_LOOP_SELECTOR);
+    for (let i = 0; i < accountsSelectors.length; i++) {
+      accountsSelectors = await page.$$(ACCOUNTS_LOOP_SELECTOR);
+      await page.click(ACCOUNTS_SELECTOR);
+      await accountsSelectors[i].click();
+
+      await page.click(SUMMARY_DOWNLOAD_SECTION_SELECTOR);
+      // await page.click(SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR);
+      await page.click(SUMMARY_DOWNLOAD_BUTTON_SELECTOR);
+    }
+
+    await browser.close();
 
     const transactionExports = fs.readdirSync(CSV_DOWNLOAD_URL);
 
