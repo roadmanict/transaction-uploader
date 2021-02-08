@@ -68,7 +68,7 @@ export class ASNTransactionDownloader {
       await accountsSelectors[i].click();
 
       await page.click(SUMMARY_DOWNLOAD_SECTION_SELECTOR);
-      // await page.click(SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR);
+      await page.click(SUMMARY_SINCE_LAST_DOWNLOAD_SELECTOR);
       await page.click(SUMMARY_DOWNLOAD_BUTTON_SELECTOR);
     }
 
