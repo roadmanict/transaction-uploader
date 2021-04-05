@@ -14,7 +14,7 @@ const ASN_BANK_LOGIN_URL =
 export const CSV_DOWNLOAD_URL = '/tmp/asn-csvs';
 
 const QR_CODE_SELECTOR =
-  'body > mijn-login > div > inloggen > ap-grid-row > div > ap-grid-col > div > div > ap-sign > div > ap-token-selector > div:nth-child(3) > ap-button > button';
+  'div.ap-container:nth-child(3) > ap-button:nth-child(1) > button:nth-child(1)';
 
 const IS_LOGGED_IN_SELECTOR =
   '#header > header > div.serviceheader-inner--left > ul > li.navbar__list--greeting';
