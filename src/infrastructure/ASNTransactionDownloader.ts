@@ -2,6 +2,7 @@ import fs from 'fs';
 import puppeteer from 'puppeteer';
 import path from 'path';
 import {injectable} from 'tsyringe';
+import * as util from 'util';
 
 export const options: puppeteer.LaunchOptions = {
   headless: false,
@@ -17,8 +18,10 @@ const QR_CODE_SELECTOR =
   'div.ap-container:nth-child(3) > ap-button:nth-child(1) > button:nth-child(1)';
 
 const IS_LOGGED_IN_SELECTOR =
-  '#header > header > div.serviceheader-inner--left > ul > li.navbar__list--greeting';
+  'html body.ap.mijn-overzicht-template__body--secondary mijn-omgeving div.mijn-omgeving ng-component mijn-overzicht-web mijn-overzicht-wrapper mijn-overzicht div.mijn-overzicht overview.ng-star-inserted mijn-overzicht-template div.mijn-overzicht-template.mijn-overzicht-template--secondary ap-header.ng-tns-c72-0.ng-star-inserted header.ng-tns-c72-0.ap-header.ap-header__border-bottom div.ng-tns-c72-0.canvas-medium div.ap-header__container.ng-tns-c72-0 a.ap-header__logo-container.ng-tns-c72-0.ng-star-inserted ap-icon.ng-tns-c72-0 div.ap-icon.ap-icon--logo.ap-icon--primary.ap-icon--small.ap-icon-container';
 
+const TRANSACTION_SUMMARY_URL = 'https://www.asnbank.nl/onlinebankieren/bankieren/secure/transacties/transactieoverzicht.html?pageName=spaar';
+  
 const TRANSACTION_SUMMARY_SELECTOR = '#bet_transactieoverzicht';
 
 const ACCOUNTS_SELECTOR = '#sl_accountNr_rekening';
@@ -57,9 +60,9 @@ export class ASNTransactionDownloader {
 
     await page.click(QR_CODE_SELECTOR);
 
-    await page.waitForSelector(IS_LOGGED_IN_SELECTOR);
+    await util.promisify(setTimeout)(10000);
 
-    await page.click(TRANSACTION_SUMMARY_SELECTOR);
+    await page.goto(TRANSACTION_SUMMARY_URL);
 
     let accountsSelectors = await page.$$(ACCOUNTS_LOOP_SELECTOR);
     for (let i = 0; i < accountsSelectors.length; i++) {

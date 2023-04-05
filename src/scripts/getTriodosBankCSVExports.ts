@@ -15,7 +15,7 @@ const IS_LOGGED_IN_SELECTOR =
   'body > app-root > div.container.hide-on-small-screen.ng-tns-c158-0 > div.row.header.ng-tns-c158-0 > div.col-2.header__logout.ng-tns-c158-0 > tri-button > button';
 
 const TRIODOS_DOWNLOAD_CSV_URL =
-  'https://bankieren.triodos.nl/ib-seam/pages/accountinformation/download/download.seam';
+  'https://www.asnbank.nl/onlinebankieren/bankieren/secure/transacties/transactieoverzicht.html?pageName=spaar';
 
 const DOWNLOAD_SEARCH_SELECTOR =
   '#downloadForm\\:downloadMode_dec\\:zdownloadMode\\:downloadMode\\:1';
