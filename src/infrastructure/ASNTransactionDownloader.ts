@@ -1,10 +1,10 @@
 import fs from 'fs';
-import puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import path from 'path';
 import {injectable} from 'tsyringe';
 import * as util from 'util';
 
-export const options: puppeteer.LaunchOptions = {
+export const options: puppeteer.PuppeteerLaunchOptions = {
   headless: false,
   slowMo: 250, // slow down by 250ms
 };
@@ -20,8 +20,9 @@ const QR_CODE_SELECTOR =
 const IS_LOGGED_IN_SELECTOR =
   'html body.ap.mijn-overzicht-template__body--secondary mijn-omgeving div.mijn-omgeving ng-component mijn-overzicht-web mijn-overzicht-wrapper mijn-overzicht div.mijn-overzicht overview.ng-star-inserted mijn-overzicht-template div.mijn-overzicht-template.mijn-overzicht-template--secondary ap-header.ng-tns-c72-0.ng-star-inserted header.ng-tns-c72-0.ap-header.ap-header__border-bottom div.ng-tns-c72-0.canvas-medium div.ap-header__container.ng-tns-c72-0 a.ap-header__logo-container.ng-tns-c72-0.ng-star-inserted ap-icon.ng-tns-c72-0 div.ap-icon.ap-icon--logo.ap-icon--primary.ap-icon--small.ap-icon-container';
 
-const TRANSACTION_SUMMARY_URL = 'https://www.asnbank.nl/onlinebankieren/bankieren/secure/transacties/transactieoverzicht.html?pageName=spaar';
-  
+const TRANSACTION_SUMMARY_URL =
+  'https://www.asnbank.nl/onlinebankieren/bankieren/secure/transacties/transactieoverzicht.html?pageName=spaar';
+
 const TRANSACTION_SUMMARY_SELECTOR = '#bet_transactieoverzicht';
 
 const ACCOUNTS_SELECTOR = '#sl_accountNr_rekening';
@@ -49,9 +50,8 @@ export class ASNTransactionDownloader {
     const browser = await puppeteer.launch(options);
 
     const page = await browser.newPage();
-
-    // @ts-expect-error _client is not available publicly
-    await page._client.send('Page.setDownloadBehavior', {
+    const client = await page.target().createCDPSession();
+    await client.send('Page.setDownloadBehavior', {
       behavior: 'allow',
       downloadPath: CSV_DOWNLOAD_URL,
     });
@@ -86,3 +86,4 @@ export class ASNTransactionDownloader {
     });
   }
 }
+

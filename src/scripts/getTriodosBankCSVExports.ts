@@ -1,7 +1,7 @@
 import * as puppeteer from 'puppeteer';
 import * as fs from 'fs';
 
-export const options: puppeteer.LaunchOptions = {
+export const options: puppeteer.PuppeteerLaunchOptions = {
   headless: false,
   slowMo: 250, // slow down by 250ms
 };
@@ -41,7 +41,9 @@ export const getTriodosBankCSVExports = async () => {
 
   try {
     fs.rmdirSync(CSV_DOWNLOAD_URL);
-  } catch (error) {}
+  } catch (error) {
+    //
+  }
 
   const browser = await puppeteer.launch(options);
 
@@ -67,9 +69,9 @@ export const getTriodosBankCSVExports = async () => {
   }
 
   const accountValues = await Promise.all(
-    (await page.$$(ACCOUNT_OPTION_SELECTOR)).map(element =>
-      element.getProperty('value')
-    )
+    (
+      await page.$$(ACCOUNT_OPTION_SELECTOR)
+    ).map(element => element.getProperty('value'))
   );
 
   const selectOptions: string[] = (await Promise.all(
@@ -97,7 +99,7 @@ export const getTriodosBankCSVExports = async () => {
 
   await page.click(CREATE_EXPORT_BUTTON_SELECTOR);
 
-  await setTimeout(async () => {
+  setTimeout(async () => {
     await page.reload();
 
     await page.click(DOWNLOAD_BUTTON);
